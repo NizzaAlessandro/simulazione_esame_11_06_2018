@@ -23,7 +23,7 @@ class View(ft.UserControl):
 
         #row1
         self.ddanno = ft.Dropdown(label="Anno")
-        self.btnAvvistamenti = ft.ElevatedButton(text="Avvistamenti", on_click=self._controller.handleAvvistamenti)
+        self.btnAvvistamenti = ft.ElevatedButton(text="Avvistamenti",on_click=self._controller.clickAvvistamenti)
         row1 = ft.Row([ft.Container(self.ddanno, width=300),
                        ft.Container(self.btnAvvistamenti, width=300)],
                       alignment=ft.MainAxisAlignment.CENTER)
@@ -31,8 +31,8 @@ class View(ft.UserControl):
 
         #row 2
         self.ddstato = ft.Dropdown(label="Stato")
-        self.btnAnalizza = ft.ElevatedButton(text="Analizza", on_click=self._controller.handleAnalizza)
-        self.btnSequenza = ft.ElevatedButton(text="Calcola sequenza",  on_click=self._controller.handleSequenza)
+        self.btnAnalizza = ft.ElevatedButton(text="Analizza",on_click=self._controller.clickAnalizza)
+        self.btnSequenza = ft.ElevatedButton(text="Calcola sequenza")
         row2 = ft.Row([ft.Container(self.ddstato, width=300),
                        ft.Container(self.btnAnalizza, width=300),
                        ft.Container(self.btnSequenza, width=300)],
@@ -46,7 +46,10 @@ class View(ft.UserControl):
         self._page.add(self.txtGrafo)
         self._page.add(self.txtAnalizza)
         self._page.add(self.txtSequenza)
-        self._controller.fillDDAnno()
+
+        #non serve chiamarla perche chiamata in un altra funzione
+        #self._controller.fillDDStati()
+        self._controller.fillDDanni()
         self._page.update()
     @property
     def controller(self):

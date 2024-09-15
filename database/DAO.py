@@ -1,74 +1,77 @@
 from database.DB_connect import DBConnect
-from model.state import State
 
 
 class DAO:
     def __init__(self):
         pass
 
-    @staticmethod
-    def getAnni():
+    def getAnniDAO(self):
         conn = DBConnect.get_connection()
 
         result = []
 
-        cursor = conn.cursor(dictionary=True)
-        query = """select distinct year (s.`datetime`) as anno, count(s.id) as count
-                    from new_ufo_sightings.sighting s 
-                    group by year(s.`datetime`)   """
+        cursor = conn.cursor(dictionary=False)
+        query = """select year (s.`datetime`), count(*) 
+from ufo_sightings.sighting s 
+where s.country = "us" 
+group by year (s.`datetime`)"""
 
         cursor.execute(query, ())
 
         for row in cursor:
-            result.append((str(row["anno"]), str(row["count"])))
+            result.append(row)
 
         cursor.close()
         conn.close()
         return result
 
-    @staticmethod
-    def getNodi(anno):
+    def getNodiDAO(self,anno):
         conn = DBConnect.get_connection()
 
         result = []
 
-        cursor = conn.cursor(dictionary=True)
-        query = """select s.*
-                    from new_ufo_sightings.state s, new_ufo_sightings.sighting s2 
-                    where s.id = s2.state 
-                    and year(s2.`datetime`) = %s
-                    group by id 
-                    having count(s2.id) > 0"""
+        cursor = conn.cursor(dictionary=False)
+        query = """select s.state 
+from ufo_sightings.sighting s 
+where year(s.`datetime`)= %s and s.country ="us"
+group by s.state 
+"""
 
         cursor.execute(query, (anno,))
 
         for row in cursor:
-            result.append(State(**row))
+            result.append(row[0])
 
         cursor.close()
         conn.close()
         return result
 
-    @staticmethod
-    def getArchi(anno):
+    def getArchiDAO(self, anno):
         conn = DBConnect.get_connection()
 
         result = []
 
-        cursor = conn.cursor(dictionary=True)
-        query = """select distinctrow upper(s.state) as s1, upper(s2.state) as s2
-                    from new_ufo_sightings.sighting s, new_ufo_sightings.sighting s2 
-                    where s.state != s2.state 
-                    and year (s2.`datetime`) = %s
-                    and year (s.`datetime`)=year (s2.`datetime`)
-                    and datediff(s2.`datetime`, s.`datetime`) > 0"""
+        cursor = conn.cursor(dictionary=False)
+        query = """select  s1.state, s2.state
+from 
+(select *
+from ufo_sightings.sighting s 
+where year(s.`datetime`)= %s and s.country ="us"
+) s1, (select *
+from ufo_sightings.sighting s 
+where year(s.`datetime`)= %s and s.country ="us"
+) s2
+where year (s1.`datetime`) = year (s2.`datetime`)
+and s1.id <>s2.id and s1.state <> s2.state and s1.datetime < s2.datetime
+group by s1.state, s2.state
 
-        cursor.execute(query, (anno,))
+"""
+
+        cursor.execute(query, (anno,anno,))
 
         for row in cursor:
-            result.append((row["s1"], row["s2"]))
+            result.append(row)
 
         cursor.close()
         conn.close()
         return result
-
